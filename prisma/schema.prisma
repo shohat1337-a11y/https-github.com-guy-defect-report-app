@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Report {
+  id           Int      @id @default(autoincrement())
+  projectName  String
+  title        String
+  date         DateTime
+  area         String?
+  recipient    String?
+  inspector    String?
+  generalNotes String?
+  status       String   @default("draft")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  defects      Defect[]
+}
+
+model Defect {
+  id               String    @id @default(cuid())
+  reportId         Int
+  report           Report    @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  defectNumber     Int
+  imagePath        String
+  location         String?
+  description      String
+  requiredSolution String
+  category         String
+  contractor       String?
+  priority         String    @default("רגיל")
+  dueDate          DateTime?
+  status           String    @default("פתוח")
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([reportId])
+}
