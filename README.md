@@ -58,6 +58,29 @@ npm run dev
 - **תמונות:** בתיקייה `public/uploads/{מספר-דוח}/`. כל תמונה מקבלת שם ייחודי.
 - מחיקת דוח מוחקת את הליקויים שלו (cascade) ואת קבצי התמונות שלהם.
 
+## אחסון תמונות ב-Google Drive (אופציונלי)
+
+כברירת מחדל התמונות נשמרות מקומית תחת `public/uploads/`. אפשר לחבר את האפליקציה
+ל-**Google Drive** כך שכל תמונה חדשה תעלה ישירות לדרייב האישי (חיבור OAuth חד-פעמי).
+כל עוד הדרייב לא מחובר, האפליקציה ממשיכה לעבוד עם אחסון מקומי — אין צורך בחיבור כדי להריץ.
+
+**הגדרה (חד-פעמי):**
+
+1. ב-[Google Cloud Console](https://console.cloud.google.com): צור פרויקט, הפעל **Google Drive API**,
+   הגדר **OAuth consent screen** (External) והוסף את ה-Gmail שלך כ-Test user.
+2. צור **OAuth client ID** מסוג **Web application** עם redirect URI:
+   `http://localhost:3000/api/google/callback`.
+3. הדבק את ה-Client ID וה-Secret אל `.env` (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`),
+   הפעל מחדש את השרת, וגש ל-`http://localhost:3000/api/google/connect`.
+4. אשר את הגישה; העמוד יציג `GOOGLE_REFRESH_TOKEN` — הדבק אותו אל `.env` והפעל מחדש.
+5. אופציונלי: `GOOGLE_DRIVE_FOLDER_ID` כדי לשמור בתיקייה מסוימת בדרייב.
+
+**איך זה עובד מבפנים:**
+- Scope מצומצם `drive.file` — האפליקציה רואה רק קבצים שהיא עצמה יצרה, לא את כל הדרייב.
+- תמונות דרייב נשמרות במסד כ-`/api/images/{fileId}` ומוגשות דרך צינור פנימי (`lib/google-drive.ts`),
+  כך שהכרטיסים וה-PDF ממשיכים לעבוד דרך כתובות מאותו origin.
+- תאימות אחורה: תמונות ישנות תחת `/uploads/` ממשיכות להיות מוצגות ונמחקות כרגיל.
+
 ## איך מפיקים PDF
 
 - לחיצה על "סיום והפקת דוח PDF" במסך הדוח (מסמן את הדוח כ-"הושלם" ופותח את ה-PDF),

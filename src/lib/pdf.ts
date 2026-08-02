@@ -11,8 +11,14 @@ export async function generateReportPdf({
   projectName,
   reportId,
 }: GeneratePdfOptions): Promise<Uint8Array> {
+  // In a container (e.g. Railway) we use the system-installed Chromium via
+  // PUPPETEER_EXECUTABLE_PATH. Locally the env var is unset and Puppeteer falls
+  // back to the Chromium it downloaded on install.
+  const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
+
   const browser = await puppeteer.launch({
     headless: true,
+    executablePath,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 

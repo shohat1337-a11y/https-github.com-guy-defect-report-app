@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { saveImage } from "@/lib/storage";
+import { saveImage, validateUploadedImage } from "@/lib/storage";
 
 function parseId(idParam: string): number | null {
   const id = Number(idParam);
@@ -41,6 +41,10 @@ export async function POST(
 
   if (!(image instanceof File) || image.size === 0) {
     return NextResponse.json({ error: "יש לצרף תמונת ליקוי" }, { status: 400 });
+  }
+  const imageError = validateUploadedImage(image);
+  if (imageError) {
+    return NextResponse.json({ error: imageError }, { status: 400 });
   }
   if (!description || !requiredSolution || !category) {
     return NextResponse.json(

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { saveImage, deleteImage } from "@/lib/storage";
+import { saveImage, deleteImage, validateUploadedImage } from "@/lib/storage";
 
 function parseNum(v: string): number | null {
   const n = Number(v);
@@ -49,6 +49,10 @@ export async function PATCH(
 
   const image = form.get("image");
   if (image instanceof File && image.size > 0) {
+    const imageError = validateUploadedImage(image);
+    if (imageError) {
+      return NextResponse.json({ error: imageError }, { status: 400 });
+    }
     const newPath = await saveImage(reportId, image);
     await deleteImage(existing.imagePath);
     data.imagePath = newPath;

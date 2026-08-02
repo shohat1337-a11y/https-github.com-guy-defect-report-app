@@ -27,7 +27,7 @@ export default function ImagePicker({ initialUrl, error, onFileSelected }: Image
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         capture="environment"
         className="hidden"
         onChange={handleChange}
