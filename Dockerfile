@@ -15,18 +15,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Use the system Chromium and skip Puppeteer's own download.
 ENV PUPPETEER_SKIP_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
-    NODE_ENV=production
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 WORKDIR /app
 
-# Install dependencies first for better layer caching.
+# Install ALL dependencies (incl. dev) - Tailwind, PostCSS and TypeScript are
+# needed at build time. NODE_ENV is intentionally not "production" here, or npm
+# would skip devDependencies and the build would fail.
 COPY package.json package-lock.json ./
 RUN npm ci
 
 # Build the app.
 COPY . .
 RUN npx prisma generate && npm run build
+
+# Only now switch to production for the running server.
+ENV NODE_ENV=production
 
 # Railway provides $PORT; Next reads it automatically.
 EXPOSE 3000
