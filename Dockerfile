@@ -14,8 +14,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Use the system Chromium and skip Puppeteer's own download.
+# DATABASE_URL points at the SQLite file on the mounted Railway volume (/data).
+# It is fixed infrastructure, so we set it here rather than as a hand-typed
+# variable - this avoids stray quotes/spaces breaking Prisma's URL parsing.
 ENV PUPPETEER_SKIP_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+    DATABASE_URL="file:/data/prod.db"
 
 WORKDIR /app
 
