@@ -20,10 +20,10 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true \
 WORKDIR /app
 
 # Install ALL dependencies (incl. dev) - Tailwind, PostCSS and TypeScript are
-# needed at build time. NODE_ENV is intentionally not "production" here, or npm
-# would skip devDependencies and the build would fail.
+# needed at build time. --include=dev forces devDependencies even when the host
+# (e.g. Railway) injects NODE_ENV=production into the build environment.
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 # Build the app.
 COPY . .
