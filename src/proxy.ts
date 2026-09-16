@@ -24,6 +24,14 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next(); // protection off (e.g. local dev)
   }
 
+  // Allow the internal PDF renderer (Puppeteer, which has no login cookie) to
+  // reach the print page when it presents the shared secret as ?key=.
+  if (/^\/reports\/\d+\/print$/.test(pathname)) {
+    if (req.nextUrl.searchParams.get("key") === secret) {
+      return NextResponse.next();
+    }
+  }
+
   const cookie = req.cookies.get(AUTH_COOKIE)?.value;
   const expected = await computeAuthToken(secret);
   if (cookie && cookie === expected) {
@@ -42,6 +50,9 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  // Run on everything except Next internals and common static assets.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|webp|svg|ico)$).*)"],
+  // Run on everything except Next internals. Image extensions are NOT excluded
+  // here on purpose: uploaded defect photos (/api/uploads/*.png, /uploads/*.png)
+  // must stay behind the password. The browser sends the auth cookie with
+  // same-origin image requests, so images still display for logged-in users.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

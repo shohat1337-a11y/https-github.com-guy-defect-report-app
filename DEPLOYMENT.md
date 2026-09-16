@@ -80,14 +80,14 @@ Railway מתחבר למאגר GitHub. (אם אין לך חשבון GitHub, פו�
 ## סיכום משתני הסביבה בענן
 
 ```
-DATABASE_URL=file:/data/prod.db
+PORT=3000
+UPLOADS_DIR=/data/uploads
 APP_PASSWORD=<סיסמה חזקה שתבחר>
 AUTH_SECRET=5fb690b0aaf5d5e94e4b7a8a1507bc2ee9f83e4373149eb2bdac2837ccb5554a
-GOOGLE_CLIENT_ID=<...>
-GOOGLE_CLIENT_SECRET=<...>
-GOOGLE_REFRESH_TOKEN=<מתקבל בשלב 6>
-GOOGLE_DRIVE_FOLDER_ID=<רשות>
 APP_BASE_URL=https://<הכתובת-שלך>.up.railway.app
 ```
 
-> `PUPPETEER_EXECUTABLE_PATH` כבר מוגדר בתוך ה-Dockerfile — אין צורך להוסיף ידנית.
+> - `DATABASE_URL` ו-`PUPPETEER_EXECUTABLE_PATH` כבר מוגדרים בתוך ה-Dockerfile — אין צורך להוסיף ידנית.
+> - `UPLOADS_DIR=/data/uploads` שומר את התמונות על ה-Volume הקבוע (יחד עם מסד הנתונים), כך שהן שורדות פריסות מחדש.
+> - `AUTH_SECRET` משמש גם לחתימת עוגיית ההתחברות וגם כמפתח הפנימי שמאפשר ל-Puppeteer להפיק PDF כשההגנה פעילה.
+> - משתני `GOOGLE_*` נדרשים רק אם מחברים אחסון תמונות ב-Google Drive במקום ב-Volume.

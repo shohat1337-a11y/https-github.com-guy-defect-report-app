@@ -1,7 +1,7 @@
 import { readFile } from "fs/promises";
 import path from "path";
 import { downloadFromDrive } from "./google-drive";
-import { driveFileIdFromPath } from "./storage";
+import { driveFileIdFromPath, uploadsDiskPath } from "./storage";
 
 const MIME_BY_EXT: Record<string, string> = {
   ".jpg": "image/jpeg",
@@ -13,9 +13,9 @@ const MIME_BY_EXT: Record<string, string> = {
 
 /**
  * Turns a stored image path into a base64 data URI for the print page, so the
- * PDF renderer never depends on network image loads. Handles both storage
- * backends: Google Drive files (path `/api/images/{fileId}`) are downloaded
- * from Drive; legacy local files are read from public/.
+ * PDF renderer never depends on network image loads. Handles all backends:
+ * Google Drive files are downloaded; file-backed images (current uploads under
+ * UPLOADS_DIR, or legacy public/ files) are read from disk.
  */
 export async function inlineImage(imagePath: string): Promise<string> {
   const driveId = driveFileIdFromPath(imagePath);
@@ -28,10 +28,11 @@ export async function inlineImage(imagePath: string): Promise<string> {
     }
   }
 
+  const disk = uploadsDiskPath(imagePath);
+  if (!disk) return "";
   try {
-    const filePath = path.join(process.cwd(), "public", imagePath);
-    const buffer = await readFile(filePath);
-    const ext = path.extname(imagePath).toLowerCase();
+    const buffer = await readFile(disk);
+    const ext = path.extname(disk).toLowerCase();
     const mime = MIME_BY_EXT[ext] ?? "image/jpeg";
     return `data:${mime};base64,${buffer.toString("base64")}`;
   } catch {

@@ -24,7 +24,13 @@ export async function GET(
   // behind a proxy or on a non-default port/host.
   const port = req.nextUrl.port || "3000";
   const baseUrl = process.env.PDF_BASE_URL || `http://127.0.0.1:${port}`;
-  const printUrl = `${baseUrl}/reports/${reportId}/print`;
+  // Puppeteer has no login cookie, so when password protection is on it would
+  // otherwise be redirected to /login and render that instead of the report.
+  // Pass the shared secret as a key the middleware accepts for the print page.
+  // This travels only over the local loopback request, never to the client.
+  const secret = process.env.AUTH_SECRET;
+  const keyParam = secret ? `?key=${encodeURIComponent(secret)}` : "";
+  const printUrl = `${baseUrl}/reports/${reportId}/print${keyParam}`;
 
   try {
     const pdf = await generateReportPdf({
